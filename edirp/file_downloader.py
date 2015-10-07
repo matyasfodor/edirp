@@ -6,22 +6,26 @@ import os
 class FileDownloader:
     HOSTNAME = "ftp.wwpdb.org"
     FTP_PATH = "/pub/pdb/data/structures/all/pdb/"
+    TARGET_FOLDER = 'downloaded'
     # PREFIX = "pdb"
     # SUFFIX = ".ent.gz"
 
-    def __init__(self, target_folder=None, host_name=HOSTNAME, ftp_path=FTP_PATH):
+    def __init__(self, working_directory=None, max_number=None, host_name=HOSTNAME, ftp_path=FTP_PATH):
         self.ftp_connection = None
         self.host_name = host_name
         self.ftp_path = ftp_path
-        self.target_folder = target_folder
 
-        if self.target_folder is None:
+        self.max_number = max_number
+
+        if working_directory is None:
             tempdir = tempfile.mkdtemp()
             print 'No target directory found, "{tempdir}" will be used to store the pdb files.'.format(tempdir=tempdir)
-            self.target_folder = tempdir
+            working_directory = tempdir
 
-        if not os.path.isdir(self.target_folder):
-            os.makedirs(self.target_folder)
+        self.target_path = os.path.join(working_directory, self.TARGET_FOLDER)
+
+        if not os.path.isdir(self.target_path):
+            os.makedirs(self.target_path)
 
     def connect_ftp(self):
         if self.ftp_connection is None:
@@ -36,20 +40,24 @@ class FileDownloader:
         self.connect_ftp()
         self.ftp_connection.cwd(self.ftp_path)
 
+        print 'Downloading file list..'
         filenames_in_dir = self.ftp_connection.nlst()
-        pdb_files = [filename for filename in filenames_in_dir if filename.startswith('pdb')]
+        files = [filename for filename in filenames_in_dir if filename.startswith('pdb')]
 
-        number_of_pdb_files = len(pdb_files)
-        print 'found {number_of_pdb_files} pdb files.'.format(number_of_pdb_files=number_of_pdb_files)
-        few_files = number_of_pdb_files < 100
+        if self.max_number is not None:
+            files = files[:self.max_number]
 
-        for pdb_file_index, pdb_file in enumerate(pdb_files):
+        number_of_files = len(files)
+        print 'Found {number_of_files} pdb files.'.format(number_of_pdb_files=number_of_files)
+        few_files = number_of_files <= 100
 
-            output_path = os.path.join(self.target_folder, pdb_file)
+        for file_name_index, file_name in enumerate(files):
+
+            output_path = os.path.join(self.target_path, file_name)
             with open(output_path, 'wb') as output_file:
-                self.ftp_connection.retrbinary('RETR {filename}'.format(filename=pdb_file), output_file.write)
+                self.ftp_connection.retrbinary('RETR {file_name}'.format(file_name=file_name), output_file.write)
 
-            if few_files or pdb_file_index % 100 == 0:
-                print '{progress}%'.format(progress=pdb_file_index * 100.0 / number_of_pdb_files)
+            if few_files or file_name_index % 100 == 0:
+                print '\t{progress}%'.format(progress=file_name_index * 100.0 / number_of_files)
 
         self.quit_connection()
