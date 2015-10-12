@@ -64,7 +64,7 @@ class PDBFile:
         return PDBFile(zipped_file.readlines(), filtered_atom_type)
 
     def has_better_resolution(self, required_resolution):
-        return self.resolution and self.resolution > required_resolution
+        return self.resolution and self.resolution < required_resolution
 
     def get_chains(self, min_length):
-        return RNAChain.get_chains_from_atoms(self.atoms, min_length)
+        return RNAChain.get_chains_from_atoms(self, min_length)

@@ -2,6 +2,8 @@ import ftplib
 import tempfile
 import os
 
+from .edirp_config_parser import EdirpConfigParser
+
 
 class FileDownloader:
     HOSTNAME = "ftp.wwpdb.org"
@@ -10,19 +12,18 @@ class FileDownloader:
     # PREFIX = "pdb"
     # SUFFIX = ".ent.gz"
 
-    def __init__(self, working_directory=None, max_number=None, host_name=HOSTNAME, ftp_path=FTP_PATH):
+    def __init__(self, **kwargs):
+        config = EdirpConfigParser(**kwargs).get_config()
+
         self.ftp_connection = None
-        self.host_name = host_name
-        self.ftp_path = ftp_path
+        self.host_name = config.get('host_name') or self.HOSTNAME
+        self.ftp_path = config.get('ftp_path') or self.FTP_PATH
 
-        self.max_number = max_number
+        self.max_number = config.get('max_number')
 
-        if working_directory is None:
-            tempdir = tempfile.mkdtemp()
-            print 'No target directory found, "{tempdir}" will be used to store the pdb files.'.format(tempdir=tempdir)
-            working_directory = tempdir
+        working_dir = config['working_dir']
 
-        self.target_path = os.path.join(working_directory, self.TARGET_FOLDER)
+        self.target_path = os.path.join(working_dir, self.TARGET_FOLDER)
 
         if not os.path.isdir(self.target_path):
             os.makedirs(self.target_path)
@@ -48,7 +49,7 @@ class FileDownloader:
             files = files[:self.max_number]
 
         number_of_files = len(files)
-        print 'Found {number_of_files} pdb files.'.format(number_of_pdb_files=number_of_files)
+        print 'Found {number_of_files} pdb files.'.format(number_of_files=number_of_files)
         few_files = number_of_files <= 100
 
         for file_name_index, file_name in enumerate(files):
