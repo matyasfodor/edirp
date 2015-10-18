@@ -2,6 +2,7 @@ import argparse
 import sys
 
 from edirp.edirp_config_parser import EdirpConfigParser
+from edirp.edirp_level_ranges import EdirpLevelRanges
 from edirp.file_downloader import FileDownloader
 from edirp.unzipper import Unzipper
 from edirp.filter_converter import FilterConverter
@@ -9,6 +10,7 @@ from edirp.filter_converter import FilterConverter
 
 class EdirpParser:
     CONFIG = 'config'
+    CONFIG_RANGES = 'config-ranges'
     PULL = 'pull'
     UNZIP = 'unzip'
     CONVERT_JSON = 'convert-json'
@@ -28,9 +30,11 @@ class EdirpParser:
 
         subparsers.add_parser(self.CONFIG)
 
+        subparsers.add_parser(self.CONFIG_RANGES)
+
         self.pull_parser = subparsers.add_parser(self.PULL)
         self.pull_parser.add_argument('--working-dir', help='BS. TBD')
-        self.pull_parser.add_argument('--max-number', type=int, help='If you don\'t want to download al the 10K+ '
+        self.pull_parser.add_argument('--max-number', type=int, help='If you don\'t want to download all the 10K+ '
                                                                      'structures for testing, chose this')
 
         self.unzip_parser = subparsers.add_parser(self.UNZIP)
@@ -54,6 +58,9 @@ if __name__ == '__main__':
 
     if namespace.subcommand == EdirpParser.CONFIG:
         EdirpConfigParser.create_config_interactively()
+
+    if namespace.subcommand == EdirpParser.CONFIG_RANGES:
+        EdirpLevelRanges.create_edirp_level_ranges_interactively()
 
     if namespace.subcommand == EdirpParser.PULL:
         FileDownloader(**vars(namespace)).pull()

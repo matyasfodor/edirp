@@ -18,7 +18,8 @@ class PDBFile:
     HEADER = 'HEADER'
     HEADER_MATCHER = [HEADER]
 
-    def __init__(self, file_lines, filtered_atom_type):
+    def __init__(self, file_lines, filtered_atom_type, config):
+        self.config = config
         self.lines = file_lines
         self.pdb_id = self._get_pdb_id()
         self.resolution = self._get_resolution()
@@ -59,12 +60,12 @@ class PDBFile:
         return True
 
     @classmethod
-    def from_zip(cls, file_name, filtered_atom_type):
+    def from_zip(cls, file_name, filtered_atom_type, config):
         zipped_file = gzip.open(file_name, 'r')
-        return PDBFile(zipped_file.readlines(), filtered_atom_type)
+        return PDBFile(zipped_file.readlines(), filtered_atom_type, config)
 
     def has_better_resolution(self, required_resolution):
         return self.resolution and self.resolution < required_resolution
 
     def get_chains(self, min_length):
-        return RNAChain.get_chains_from_atoms(self, min_length)
+        return RNAChain.get_chains_from_atoms(self, min_length, self.config)

@@ -11,8 +11,8 @@ class FilterConverter:
     DATA_SET_EDIRP = 'data_set_edirp'
 
     def __init__(self, **kwargs):
-        config = EdirpConfigParser(**kwargs).get_config()
-        working_dir = config['working_dir']
+        self.config = EdirpConfigParser(**kwargs).get_config()
+        working_dir = self.config['working_dir']
         if not os.path.isdir(working_dir):
             os.makedirs(working_dir)
 
@@ -25,12 +25,12 @@ class FilterConverter:
         if not os.path.isdir(self.output_path_edirp_json):
             os.makedirs(self.output_path_edirp_json)
 
-        self.min_resolution = config['min_resolution']
-        self.min_chain_length = config['min_chain_length']
-        self.atom_type = config['atom_type']
+        self.min_resolution = self.config['min_resolution']
+        self.min_chain_length = self.config['min_chain_length']
+        self.atom_type = self.config['atom_type']
 
     def filter_and_convert_to_json(self):
-        chains = self._extract_filtered_chains(self)
+        chains = self._extract_filtered_chains()
 
         print 'Found {number_of_chains} chains matching the criteria'.format(number_of_chains=len(chains))
 
@@ -38,7 +38,7 @@ class FilterConverter:
                 chain.write_to_file(self.output_path_json)
 
     def filter_and_convert_to_edirp(self):
-        chains = self._extract_filtered_chains(self)
+        chains = self._extract_filtered_chains()
 
         print 'Found {number_of_chains} chains matching the criteria'.format(number_of_chains=len(chains))
 
@@ -50,7 +50,7 @@ class FilterConverter:
         chains = []
 
         for file_name in file_names:
-            pdb_file = PDBFile.from_zip(file_name, self.atom_type)
+            pdb_file = PDBFile.from_zip(file_name, self.atom_type, self.config)
             if pdb_file.has_better_resolution(self.min_resolution):
                 chains += pdb_file.get_chains(self.min_chain_length)
 

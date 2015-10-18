@@ -1,10 +1,11 @@
 import json
 
 from . import defaults
+from .edirp_level_ranges import EdirpLevelRanges
 
 
 class EdirpConfigParser:
-    FIX_VALUES = ('working_dir', 'min_resolution', 'min_chain_length',)
+    FIX_VALUES = ('working_dir', 'min_resolution', 'min_chain_length', 'edirp_level_ranges_file_path',)
 
     def __init__(self, **kwargs):
         try:
@@ -27,7 +28,8 @@ class EdirpConfigParser:
         self.atom_type = config_data.get('atom_type') or defaults.DEFAULT_ATOM_TYPE
 
         # for edirp conversion
-        self.edirp_level_ranges = config_data.get('edirp_level_ranges') or defaults.EDIRP_LEVEL_RANGES
+        edirp_level_ranges_file_path = config_data.get('edirp_level_ranges_file_path') or defaults.DEFAULT_EDIRP_LEVEL_RANGES_FILE_PATH
+        self.edirp_level_ranges = EdirpLevelRanges.from_json(edirp_level_ranges_file_path)
 
     @staticmethod
     def create_config_interactively():
@@ -70,13 +72,8 @@ class EdirpConfigParser:
             'min_resolution': min_resolution or defaults.DEFAULT_MIN_RESOLUTION,
             'min_chain_length': min_chain_length or defaults.DEFAULT_MIN_CHAIN_LENGTH,
             'atom_type': atom_type or defaults.DEFAULT_ATOM_TYPE,
+            'edirp_level_ranges_file_path': edirp_level_ranges_file_path or defaults.DEFAULT_EDIRP_LEVEL_RANGES_FILE_PATH,
         }
-
-        edirp_level_ranges_file_path = edirp_level_ranges_file_path or defaults.DEFAULT_EDIRP_LEVEL_RANGES_FILE_PATH
-
-        with open(edirp_level_ranges_file_path, 'r') as edirp_level_ranges_file:
-            edirp_level_ranges = json.load(edirp_level_ranges_file)
-            data['edirp_level_ranges'] = edirp_level_ranges
 
         config_file_path = config_file_path or defaults.DEFAULT_EDIRP_CONFIG_FILE_PATH
 
@@ -84,26 +81,19 @@ class EdirpConfigParser:
 
     def to_json(self, json_file_path):
         with open(json_file_path, 'w') as json_file:
-            json.dump(self.get_config(), json_file)
+            json.dump({
+                'working_dir': self.working_dir,
+                'max_number': self.max_number,
+                'min_resolution': self.min_resolution,
+                'min_chain_length': self.min_chain_length,
+                'atom_type': self.atom_type,
+            }, json_file)
 
-    def config_data_from_json(self, json_file_path):
-        config_data = {}
-
+    @staticmethod
+    def config_data_from_json(json_file_path):
         with open(json_file_path, 'r') as json_file:
             json_data = json.load(json_file)
-            config_data.update({key: json_data[key] for key in self.FIX_VALUES})
-
-            if 'edirp_level_ranges' in json_data:
-                config_data['edirp_level_ranges'] = json_data['edirp_level_ranges']
-
-            else:
-                edirp_level_ranges_file_path = json_data['edirp_level_ranges_file_path']
-
-                with open(edirp_level_ranges_file_path, 'r') as level_ranges_file:
-                    level_ranges_data = json.load(level_ranges_file)
-                    config_data['edirp_level_ranges'] = level_ranges_data
-
-        return config_data
+            return json_data
 
     def get_config(self):
         return {

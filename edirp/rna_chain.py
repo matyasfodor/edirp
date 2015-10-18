@@ -12,7 +12,9 @@ class RNAChain:
     Y_COORD_COLUMNS = slice(39, 47)
     Z_COORD_COLUMNS = slice(47, 55)
 
-    def __init__(self, chain_id, pdb_object, atoms):
+    def __init__(self, chain_id, pdb_object, atoms, config):
+        self.config = config
+
         self.chain_id = chain_id
         self.pdb_id = pdb_object.pdb_id
         self.resolution = pdb_object.resolution
@@ -49,6 +51,7 @@ class RNAChain:
                     'pdb_id': self.pdb_id,
                     'chain_id': self.chain_id,
                     'resolution': self.resolution,
+                    'edirp_level_ranges_name': self.config['edirp_level_ranges'].name
                 },
                 'distribution': distribution,
             }
@@ -56,7 +59,7 @@ class RNAChain:
             json.dump(dump_object, output_file)
 
     @classmethod
-    def get_chains_from_atoms(cls, pdb_object, min_length):
+    def get_chains_from_atoms(cls, pdb_object, min_length, config):
         atoms = pdb_object.atoms
 
         atoms_lines_by_chain = cls._get_atoms_by_chain(atoms)
@@ -64,7 +67,7 @@ class RNAChain:
         atom_objects_by_chain = {key: cls._get_atom_coords_from_line(value) for
                                  key, value in atoms_lines_by_chain.items()}
 
-        chains = [RNAChain(chain_id, pdb_object, chain_atoms) for
+        chains = [RNAChain(chain_id, pdb_object, chain_atoms, config) for
                   (chain_id, chain_atoms) in atom_objects_by_chain.iteritems()]
 
         return [chain for chain in chains if chain.is_rna() and chain.get_length() > min_length]
@@ -118,8 +121,8 @@ class RNAChain:
         distances = []
         for index, first_atom in enumerate(self.atoms):
             for second_atom in self.atoms[index+1:]:
-                distances.append(self._compute_atom_distance(first_atom, second_atom))
-        print distances
+                distances.append(self._compute_atom_distance(first_atom['coordinates'], second_atom['coordinates']))
+        return self.config['edirp_level_ranges'].create_histogram(distances)
 
     @staticmethod
     def _compute_atom_distance(first_atom, second_atom):
