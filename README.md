@@ -1,5 +1,7 @@
 ### EDIRP
 
+Build stauts: [![Build Status](https://travis-ci.org/matyasfodor/edirp.svg?branch=master)](https://travis-ci.org/matyasfodor/edirp)
+
 *Some description here*
 
 ## Installation
