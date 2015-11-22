@@ -8,3 +8,4 @@ Build status: [![Build Status](https://travis-ci.org/matyasfodor/edirp.svg?branc
 
     mkvirtualenv edirp
     . activate_venv.sh
+    pip install -r requirements.txt
