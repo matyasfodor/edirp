@@ -120,7 +120,7 @@ class RNAChain:
     def _get_distribution(self):
         distances = []
         for index, first_atom in enumerate(self.atoms):
-            for second_atom in self.atoms[index+1:]:
+            for second_atom in self.atoms[index + 1:]:
                 distances.append(self._compute_atom_distance(first_atom['coordinates'], second_atom['coordinates']))
         return self.config['edirp_level_ranges'].create_histogram(distances)
 
@@ -129,4 +129,4 @@ class RNAChain:
         first_atom_coord = numpy.array((first_atom['x'], first_atom['y'], first_atom['z'],))
         second_atom_coord = numpy.array((second_atom['x'], second_atom['y'], second_atom['z'],))
 
-        return numpy.linalg.norm(first_atom_coord-second_atom_coord)
+        return numpy.linalg.norm(first_atom_coord - second_atom_coord)
