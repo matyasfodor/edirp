@@ -2,7 +2,7 @@
 
 Build status: [![Build Status](https://travis-ci.org/matyasfodor/edirp.svg?branch=master)](https://travis-ci.org/matyasfodor/edirp)
 
-*Some description here*
+*RNA comparison tool based on spatial distance distributions. The idea is the opposite of PRIDE's: http://pongor.itk.ppke.hu/protein/pride.html#/pride_help*
 
 ## Installation
 
